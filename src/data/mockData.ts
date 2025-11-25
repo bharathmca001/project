@@ -88,8 +88,10 @@ export const mockCustomers: Customer[] = [
     totalOrders: 24,
     totalSpent: 1245.50,
     loyaltyPoints: 1240,
+    loyaltyTier: 'Silver',
     joinDate: '2024-01-20',
-    lastOrder: '2024-11-20'
+    lastOrder: '2024-11-20',
+    location: 'New York, NY'
   },
   {
     id: 'C002',
@@ -100,8 +102,10 @@ export const mockCustomers: Customer[] = [
     totalOrders: 18,
     totalSpent: 890.25,
     loyaltyPoints: 890,
+    loyaltyTier: 'Bronze',
     joinDate: '2024-02-15',
-    lastOrder: '2024-11-18'
+    lastOrder: '2024-11-18',
+    location: 'Los Angeles, CA'
   },
   {
     id: 'C003',
@@ -112,8 +116,10 @@ export const mockCustomers: Customer[] = [
     totalOrders: 32,
     totalSpent: 2156.75,
     loyaltyPoints: 2150,
+    loyaltyTier: 'Gold',
     joinDate: '2024-01-05',
-    lastOrder: '2024-11-22'
+    lastOrder: '2024-11-22',
+    location: 'Chicago, IL'
   },
   {
     id: 'C004',
@@ -124,8 +130,10 @@ export const mockCustomers: Customer[] = [
     totalOrders: 5,
     totalSpent: 234.00,
     loyaltyPoints: 0,
+    loyaltyTier: 'Bronze',
     joinDate: '2024-09-10',
-    lastOrder: '2024-10-15'
+    lastOrder: '2024-10-15',
+    location: 'San Francisco, CA'
   },
   {
     id: 'C005',
@@ -136,8 +144,10 @@ export const mockCustomers: Customer[] = [
     totalOrders: 41,
     totalSpent: 3245.90,
     loyaltyPoints: 3240,
+    loyaltyTier: 'Platinum',
     joinDate: '2023-12-20',
-    lastOrder: '2024-11-23'
+    lastOrder: '2024-11-23',
+    location: 'Austin, TX'
   }
 ];
 
@@ -152,6 +162,7 @@ export const mockOrders: Order[] = [
     total: 45.50,
     items: 3,
     orderDate: '2024-11-20T14:30:00',
+    date: '2024-11-20',
     deliveryType: 'delivery',
     paymentStatus: 'paid'
   },
@@ -165,6 +176,7 @@ export const mockOrders: Order[] = [
     total: 32.75,
     items: 2,
     orderDate: '2024-11-23T12:15:00',
+    date: '2024-11-23',
     deliveryType: 'pickup',
     paymentStatus: 'paid'
   },
@@ -174,10 +186,11 @@ export const mockOrders: Order[] = [
     customerName: 'Eva Martinez',
     merchantId: 'M004',
     merchantName: 'Coffee Haus',
-    status: 'confirmed',
+    status: 'in-transit',
     total: 12.50,
     items: 2,
     orderDate: '2024-11-23T09:45:00',
+    date: '2024-11-23',
     deliveryType: 'pickup',
     paymentStatus: 'paid'
   },
@@ -191,6 +204,7 @@ export const mockOrders: Order[] = [
     total: 67.00,
     items: 4,
     orderDate: '2024-11-23T13:20:00',
+    date: '2024-11-23',
     deliveryType: 'delivery',
     paymentStatus: 'pending'
   },
@@ -200,12 +214,41 @@ export const mockOrders: Order[] = [
     customerName: 'Alice Brown',
     merchantId: 'M003',
     merchantName: 'Sushi Spot',
-    status: 'ready',
+    status: 'in-transit',
     total: 89.25,
     items: 5,
     orderDate: '2024-11-23T11:00:00',
+    date: '2024-11-23',
     deliveryType: 'pickup',
     paymentStatus: 'paid'
+  },
+  {
+    id: 'ORD-2024-006',
+    customerId: 'C003',
+    customerName: 'Carol White',
+    merchantId: 'M004',
+    merchantName: 'Coffee Haus',
+    status: 'delivered',
+    total: 18.75,
+    items: 3,
+    orderDate: '2024-11-22T08:30:00',
+    date: '2024-11-22',
+    deliveryType: 'pickup',
+    paymentStatus: 'paid'
+  },
+  {
+    id: 'ORD-2024-007',
+    customerId: 'C005',
+    customerName: 'Eva Martinez',
+    merchantId: 'M001',
+    merchantName: 'Pizza Palace',
+    status: 'cancelled',
+    total: 54.00,
+    items: 2,
+    orderDate: '2024-11-21T19:15:00',
+    date: '2024-11-21',
+    deliveryType: 'delivery',
+    paymentStatus: 'refunded'
   }
 ];
 

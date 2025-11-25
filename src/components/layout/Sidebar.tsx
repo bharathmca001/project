@@ -21,6 +21,7 @@ import {
 interface SidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  onCollapseChange?: (collapsed: boolean) => void;
 }
 
 const menuItems = [
@@ -40,8 +41,15 @@ const menuItems = [
   { id: 'settings', label: 'Settings', icon: Settings }
 ];
 
-export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
+export default function Sidebar({ activeTab, onTabChange, onCollapseChange }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+
+  const handleToggleCollapse = () => {
+    const newCollapsedState = !isCollapsed;
+    setIsCollapsed(newCollapsedState);
+    onCollapseChange?.(newCollapsedState);
+  };
 
   return (
     <aside
@@ -51,13 +59,17 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     >
       <div className="flex flex-col h-full">
         <div className="flex items-center justify-between p-6 border-b border-slate-700/50">
-          {!isCollapsed && (
+          {!isCollapsed ? (
             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
               NearU Admin
             </h1>
+          ) : (
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+              <Store size={24} className="text-white" />
+            </div>
           )}
           <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
+            onClick={handleToggleCollapse}
             className="p-2 hover:bg-slate-700/50 rounded-xl transition-colors"
           >
             {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -70,29 +82,37 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             const isActive = activeTab === item.id;
 
             return (
-              <button
-                key={item.id}
-                onClick={() => onTabChange(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group ${
-                  isActive
-                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 shadow-lg shadow-blue-500/25'
-                    : 'hover:bg-slate-700/50 hover:translate-x-1'
-                }`}
-              >
-                <Icon
-                  size={20}
-                  className={isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}
-                />
-                {!isCollapsed && (
-                  <span
-                    className={`text-sm font-medium ${
-                      isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'
-                    }`}
-                  >
+              <div key={item.id} className="relative">
+                <button
+                  onClick={() => onTabChange(item.id)}
+                  onMouseEnter={() => setHoveredItem(item.id)}
+                  onMouseLeave={() => setHoveredItem(null)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group ${
+                    isActive
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500 shadow-lg shadow-blue-500/25'
+                      : 'hover:bg-slate-700/50 hover:translate-x-1'
+                  }`}
+                >
+                  <Icon
+                    size={20}
+                    className={isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}
+                  />
+                  {!isCollapsed && (
+                    <span
+                      className={`text-sm font-medium ${
+                        isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  )}
+                </button>
+                {isCollapsed && hoveredItem === item.id && (
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-slate-900 text-white text-sm font-medium rounded-xl shadow-lg whitespace-nowrap z-50 border border-slate-700">
                     {item.label}
-                  </span>
+                  </div>
                 )}
-              </button>
+              </div>
             );
           })}
         </nav>

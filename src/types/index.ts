@@ -23,8 +23,10 @@ export interface Customer {
   totalOrders: number;
   totalSpent: number;
   loyaltyPoints: number;
+  loyaltyTier: 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
   joinDate: string;
   lastOrder: string;
+  location: string;
 }
 
 export interface Order {
@@ -33,10 +35,11 @@ export interface Order {
   customerName: string;
   merchantId: string;
   merchantName: string;
-  status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled' | 'in-transit';
   total: number;
   items: number;
   orderDate: string;
+  date: string;
   deliveryType: 'pickup' | 'delivery';
   paymentStatus: 'paid' | 'pending' | 'refunded';
 }
