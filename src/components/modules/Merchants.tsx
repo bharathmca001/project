@@ -1,20 +1,115 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, Edit, Trash2, Plus, Download, Filter, MoreVertical, Star } from 'lucide-react';
-import { mockMerchants } from '../../data/mockData';
+import { supabase } from '../../lib/supabase';
+import toast from 'react-hot-toast';
 import Badge from '../common/Badge';
 import SearchInput from '../common/SearchInput';
 import Select from '../common/Select';
 import Modal from '../common/Modal';
+import AddMerchantForm from '../forms/AddMerchantForm';
+
+interface Merchant {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  business_name: string;
+  category: string;
+  status: string;
+  kyc_status: string;
+  revenue: number;
+  orders: number;
+  location: string;
+  rating: number;
+  created_at: string;
+}
+
+interface MerchantFormData {
+  name: string;
+  email: string;
+  phone: string;
+  businessName: string;
+  category: string;
+  location: string;
+}
 
 export default function Merchants() {
+  const [merchants, setMerchants] = useState<Merchant[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
-  const [selectedMerchant, setSelectedMerchant] = useState<typeof mockMerchants[0] | null>(null);
+  const [selectedMerchant, setSelectedMerchant] = useState<Merchant | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const filteredMerchants = mockMerchants.filter(merchant => {
-    const matchesSearch = merchant.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  useEffect(() => {
+    fetchMerchants();
+  }, []);
+
+  const fetchMerchants = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('merchants')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setMerchants(data || []);
+    } catch (error) {
+      console.error('Error fetching merchants:', error);
+      toast.error('Failed to load merchants');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddMerchant = async (formData: MerchantFormData) => {
+    try {
+      setIsSubmitting(true);
+
+      const { data, error } = await supabase
+        .from('merchants')
+        .insert([
+          {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            business_name: formData.businessName,
+            category: formData.category,
+            location: formData.location,
+            status: 'pending',
+            kyc_status: 'pending',
+            revenue: 0,
+            orders: 0,
+            rating: 0
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast.success('Merchant added successfully!');
+      setMerchants([data, ...merchants]);
+      setIsAddModalOpen(false);
+    } catch (error: any) {
+      console.error('Error adding merchant:', error);
+      if (error.code === '23505') {
+        toast.error('A merchant with this email already exists');
+      } else {
+        toast.error('Failed to add merchant. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const filteredMerchants = merchants.filter(merchant => {
+    const matchesSearch = merchant.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           merchant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           merchant.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = !statusFilter || merchant.status === statusFilter;
@@ -22,12 +117,23 @@ export default function Merchants() {
     return matchesSearch && matchesStatus && matchesCategory;
   });
 
-  const categories = Array.from(new Set(mockMerchants.map(m => m.category)));
+  const categories = Array.from(new Set(merchants.map(m => m.category)));
 
-  const handleViewMerchant = (merchant: typeof mockMerchants[0]) => {
+  const handleViewMerchant = (merchant: Merchant) => {
     setSelectedMerchant(merchant);
     setIsViewModalOpen(true);
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading merchants...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -36,7 +142,10 @@ export default function Merchants() {
           <h1 className="text-3xl font-bold text-slate-900 mb-2">Merchants Management</h1>
           <p className="text-slate-600">Manage and monitor all merchant accounts on the platform</p>
         </div>
-        <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-2xl hover:shadow-lg hover:scale-105 transition-all duration-200 font-semibold">
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-2xl hover:shadow-lg hover:scale-105 transition-all duration-200 font-semibold"
+        >
           <Plus size={20} />
           Add Merchant
         </button>
@@ -73,7 +182,7 @@ export default function Merchants() {
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-slate-600">
             Showing <span className="font-semibold text-slate-900">{filteredMerchants.length}</span> of{' '}
-            <span className="font-semibold text-slate-900">{mockMerchants.length}</span> merchants
+            <span className="font-semibold text-slate-900">{merchants.length}</span> merchants
           </p>
           <div className="flex items-center gap-2">
             <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors text-sm font-medium">
@@ -106,10 +215,10 @@ export default function Merchants() {
             <tbody>
               {filteredMerchants.map((merchant) => (
                 <tr key={merchant.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                  <td className="py-4 px-4 text-sm font-medium text-slate-900">{merchant.id}</td>
+                  <td className="py-4 px-4 text-sm font-medium text-slate-900">{merchant.id.slice(0, 8)}</td>
                   <td className="py-4 px-4">
                     <div>
-                      <p className="text-sm font-semibold text-slate-900">{merchant.businessName}</p>
+                      <p className="text-sm font-semibold text-slate-900">{merchant.business_name}</p>
                       <p className="text-xs text-slate-500">{merchant.email}</p>
                     </div>
                   </td>
@@ -134,14 +243,14 @@ export default function Merchants() {
                   <td className="py-4 px-4">
                     <Badge
                       variant={
-                        merchant.kycStatus === 'approved'
+                        merchant.kyc_status === 'approved'
                           ? 'success'
-                          : merchant.kycStatus === 'rejected'
+                          : merchant.kyc_status === 'rejected'
                           ? 'error'
                           : 'warning'
                       }
                     >
-                      {merchant.kycStatus}
+                      {merchant.kyc_status}
                     </Badge>
                   </td>
                   <td className="py-4 px-4 text-sm font-semibold text-slate-900 text-right">
@@ -190,17 +299,39 @@ export default function Merchants() {
       </div>
 
       <Modal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        title="Add New Merchant"
+        size="lg"
+      >
+        <AddMerchantForm onSubmit={handleAddMerchant} isSubmitting={isSubmitting} />
+      </Modal>
+
+      <Modal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
         title="Merchant Details"
         size="lg"
+        footer={
+          <>
+            <button
+              onClick={() => setIsViewModalOpen(false)}
+              className="px-6 py-2 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors font-medium"
+            >
+              Close
+            </button>
+            <button className="px-6 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl hover:shadow-lg transition-all font-medium">
+              Edit Merchant
+            </button>
+          </>
+        }
       >
         {selectedMerchant && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <p className="text-sm font-semibold text-slate-600 mb-1">Business Name</p>
-                <p className="text-lg text-slate-900">{selectedMerchant.businessName}</p>
+                <p className="text-lg text-slate-900">{selectedMerchant.business_name}</p>
               </div>
               <div>
                 <p className="text-sm font-semibold text-slate-600 mb-1">Owner Name</p>
@@ -243,15 +374,15 @@ export default function Merchants() {
                 <p className="text-sm font-semibold text-slate-600 mb-1">KYC Status</p>
                 <Badge
                   variant={
-                    selectedMerchant.kycStatus === 'approved'
+                    selectedMerchant.kyc_status === 'approved'
                       ? 'success'
-                      : selectedMerchant.kycStatus === 'rejected'
+                      : selectedMerchant.kyc_status === 'rejected'
                       ? 'error'
                       : 'warning'
                   }
                   size="md"
                 >
-                  {selectedMerchant.kycStatus}
+                  {selectedMerchant.kyc_status}
                 </Badge>
               </div>
               <div>
@@ -271,16 +402,10 @@ export default function Merchants() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-slate-600 mb-1">Join Date</p>
-                <p className="text-lg text-slate-900">{selectedMerchant.joinDate}</p>
+                <p className="text-lg text-slate-900">
+                  {new Date(selectedMerchant.created_at).toLocaleDateString()}
+                </p>
               </div>
-            </div>
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
-              <button className="px-6 py-2 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors font-medium">
-                Close
-              </button>
-              <button className="px-6 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl hover:shadow-lg transition-all font-medium">
-                Edit Merchant
-              </button>
             </div>
           </div>
         )}

@@ -7,9 +7,19 @@ interface ModalProps {
   title: string;
   children: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  footer?: React.ReactNode;
+  showCloseButton?: boolean;
 }
 
-export default function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
+export default function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  size = 'md',
+  footer,
+  showCloseButton = true
+}: ModalProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -39,16 +49,23 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
       <div className={`relative bg-white rounded-2xl shadow-2xl w-full ${sizeClasses[size]} max-h-[90vh] flex flex-col animate-in fade-in zoom-in duration-200`}>
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <h2 className="text-2xl font-bold text-slate-900">{title}</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
-          >
-            <X size={20} className="text-slate-600" />
-          </button>
+          {showCloseButton && (
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+            >
+              <X size={20} className="text-slate-600" />
+            </button>
+          )}
         </div>
         <div className="flex-1 overflow-y-auto p-6">
           {children}
         </div>
+        {footer && (
+          <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );
