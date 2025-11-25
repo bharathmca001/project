@@ -1,0 +1,221 @@
+import { Merchant, Customer, Order, Analytics } from '../types';
+
+export const mockMerchants: Merchant[] = [
+  {
+    id: 'M001',
+    name: 'John Smith',
+    email: 'john@pizzapalace.com',
+    phone: '+1 234-567-8900',
+    businessName: 'Pizza Palace',
+    category: 'Restaurant',
+    status: 'active',
+    kycStatus: 'approved',
+    revenue: 45000,
+    orders: 234,
+    joinDate: '2024-01-15',
+    location: 'New York, NY',
+    rating: 4.5
+  },
+  {
+    id: 'M002',
+    name: 'Sarah Johnson',
+    email: 'sarah@burgerbay.com',
+    phone: '+1 234-567-8901',
+    businessName: 'Burger Bay',
+    category: 'Restaurant',
+    status: 'active',
+    kycStatus: 'approved',
+    revenue: 38500,
+    orders: 189,
+    joinDate: '2024-02-20',
+    location: 'Los Angeles, CA',
+    rating: 4.7
+  },
+  {
+    id: 'M003',
+    name: 'Mike Chen',
+    email: 'mike@sushispot.com',
+    phone: '+1 234-567-8902',
+    businessName: 'Sushi Spot',
+    category: 'Restaurant',
+    status: 'pending',
+    kycStatus: 'pending',
+    revenue: 15000,
+    orders: 67,
+    joinDate: '2024-10-05',
+    location: 'San Francisco, CA',
+    rating: 4.2
+  },
+  {
+    id: 'M004',
+    name: 'Emily Davis',
+    email: 'emily@coffeehaus.com',
+    phone: '+1 234-567-8903',
+    businessName: 'Coffee Haus',
+    category: 'Cafe',
+    status: 'active',
+    kycStatus: 'approved',
+    revenue: 28000,
+    orders: 456,
+    joinDate: '2024-03-10',
+    location: 'Chicago, IL',
+    rating: 4.8
+  },
+  {
+    id: 'M005',
+    name: 'David Wilson',
+    email: 'david@tacotreats.com',
+    phone: '+1 234-567-8904',
+    businessName: 'Taco Treats',
+    category: 'Restaurant',
+    status: 'inactive',
+    kycStatus: 'approved',
+    revenue: 22000,
+    orders: 98,
+    joinDate: '2024-05-22',
+    location: 'Austin, TX',
+    rating: 4.3
+  }
+];
+
+export const mockCustomers: Customer[] = [
+  {
+    id: 'C001',
+    name: 'Alice Brown',
+    email: 'alice.brown@email.com',
+    phone: '+1 345-678-9000',
+    status: 'active',
+    totalOrders: 24,
+    totalSpent: 1245.50,
+    loyaltyPoints: 1240,
+    joinDate: '2024-01-20',
+    lastOrder: '2024-11-20'
+  },
+  {
+    id: 'C002',
+    name: 'Bob Taylor',
+    email: 'bob.taylor@email.com',
+    phone: '+1 345-678-9001',
+    status: 'active',
+    totalOrders: 18,
+    totalSpent: 890.25,
+    loyaltyPoints: 890,
+    joinDate: '2024-02-15',
+    lastOrder: '2024-11-18'
+  },
+  {
+    id: 'C003',
+    name: 'Carol White',
+    email: 'carol.white@email.com',
+    phone: '+1 345-678-9002',
+    status: 'active',
+    totalOrders: 32,
+    totalSpent: 2156.75,
+    loyaltyPoints: 2150,
+    joinDate: '2024-01-05',
+    lastOrder: '2024-11-22'
+  },
+  {
+    id: 'C004',
+    name: 'Daniel Lee',
+    email: 'daniel.lee@email.com',
+    phone: '+1 345-678-9003',
+    status: 'blocked',
+    totalOrders: 5,
+    totalSpent: 234.00,
+    loyaltyPoints: 0,
+    joinDate: '2024-09-10',
+    lastOrder: '2024-10-15'
+  },
+  {
+    id: 'C005',
+    name: 'Eva Martinez',
+    email: 'eva.martinez@email.com',
+    phone: '+1 345-678-9004',
+    status: 'active',
+    totalOrders: 41,
+    totalSpent: 3245.90,
+    loyaltyPoints: 3240,
+    joinDate: '2023-12-20',
+    lastOrder: '2024-11-23'
+  }
+];
+
+export const mockOrders: Order[] = [
+  {
+    id: 'ORD-2024-001',
+    customerId: 'C001',
+    customerName: 'Alice Brown',
+    merchantId: 'M001',
+    merchantName: 'Pizza Palace',
+    status: 'delivered',
+    total: 45.50,
+    items: 3,
+    orderDate: '2024-11-20T14:30:00',
+    deliveryType: 'delivery',
+    paymentStatus: 'paid'
+  },
+  {
+    id: 'ORD-2024-002',
+    customerId: 'C003',
+    customerName: 'Carol White',
+    merchantId: 'M002',
+    merchantName: 'Burger Bay',
+    status: 'preparing',
+    total: 32.75,
+    items: 2,
+    orderDate: '2024-11-23T12:15:00',
+    deliveryType: 'pickup',
+    paymentStatus: 'paid'
+  },
+  {
+    id: 'ORD-2024-003',
+    customerId: 'C005',
+    customerName: 'Eva Martinez',
+    merchantId: 'M004',
+    merchantName: 'Coffee Haus',
+    status: 'confirmed',
+    total: 12.50,
+    items: 2,
+    orderDate: '2024-11-23T09:45:00',
+    deliveryType: 'pickup',
+    paymentStatus: 'paid'
+  },
+  {
+    id: 'ORD-2024-004',
+    customerId: 'C002',
+    customerName: 'Bob Taylor',
+    merchantId: 'M001',
+    merchantName: 'Pizza Palace',
+    status: 'pending',
+    total: 67.00,
+    items: 4,
+    orderDate: '2024-11-23T13:20:00',
+    deliveryType: 'delivery',
+    paymentStatus: 'pending'
+  },
+  {
+    id: 'ORD-2024-005',
+    customerId: 'C001',
+    customerName: 'Alice Brown',
+    merchantId: 'M003',
+    merchantName: 'Sushi Spot',
+    status: 'ready',
+    total: 89.25,
+    items: 5,
+    orderDate: '2024-11-23T11:00:00',
+    deliveryType: 'pickup',
+    paymentStatus: 'paid'
+  }
+];
+
+export const mockAnalytics: Analytics = {
+  totalRevenue: 148500,
+  totalOrders: 1044,
+  totalMerchants: 45,
+  totalCustomers: 2834,
+  revenueGrowth: 12.5,
+  ordersGrowth: 8.3,
+  merchantsGrowth: 15.2,
+  customersGrowth: 22.1
+};
