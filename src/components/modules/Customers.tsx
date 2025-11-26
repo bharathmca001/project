@@ -33,7 +33,7 @@ export default function Customers() {
       setLoading(true);
       logger.info('Customers', 'Fetching customers data');
       await new Promise(resolve => setTimeout(resolve, 500));
-      setCustomers(mockCustomers as CustomerData[]);
+      setCustomers(mockCustomers as unknown as CustomerData[]);
       logger.info('Customers', `Successfully loaded ${mockCustomers.length} customers`);
     } catch (error) {
       logger.error('Customers', 'Failed to fetch customers', error);
@@ -100,7 +100,7 @@ export default function Customers() {
       key: 'spent',
       label: 'Total Spent',
       sortable: true,
-      render: (value) => `$${value.toLocaleString()}`,
+      render: (value) => `$${value?.toLocaleString()}`,
     },
     {
       key: 'status',
@@ -228,7 +228,7 @@ export default function Customers() {
               <div>
                 <p className="text-sm font-semibold text-slate-600 mb-1">Total Spent</p>
                 <p className="text-lg font-bold text-slate-900">
-                  ${selectedCustomer.spent.toLocaleString()}
+                  ${selectedCustomer.spent?.toLocaleString()}
                 </p>
               </div>
               <div className="col-span-2">
