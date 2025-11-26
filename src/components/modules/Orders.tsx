@@ -31,7 +31,8 @@ export default function Orders() {
       setLoading(true);
       logger.info('Orders', 'Fetching orders data');
       await new Promise(resolve => setTimeout(resolve, 500));
-      setOrders(mockOrders as OrderData[]);
+      // Cast via unknown first to avoid the "may be a mistake" conversion error
+      setOrders(mockOrders as unknown as OrderData[]);
       logger.info('Orders', `Successfully loaded ${mockOrders.length} orders`);
     } catch (error) {
       logger.error('Orders', 'Failed to fetch orders', error);
