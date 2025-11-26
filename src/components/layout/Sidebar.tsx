@@ -55,7 +55,7 @@ export default function Sidebar({ activeTab, onTabChange, onCollapseChange }: Si
 
   return (
     <aside
-      className={`fixed left-0 top-0 h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white transition-all duration-300 z-40 ${
+      className={`fixed left-0 top-0 h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white transition-all duration-300 z-50 ${
         isCollapsed ? 'w-20' : 'w-64'
       }`}
     >
@@ -110,7 +110,7 @@ export default function Sidebar({ activeTab, onTabChange, onCollapseChange }: Si
                   )}
                 </button>
                 {isCollapsed && hoveredItem === item.id && (
-                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-slate-900 text-white text-sm font-medium rounded-xl shadow-lg whitespace-nowrap z-50 border border-slate-700">
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-slate-900 text-white text-sm font-medium rounded-xl shadow-2xl whitespace-nowrap z-[9999] border border-slate-700 pointer-events-none">
                     {item.label}
                   </div>
                 )}
