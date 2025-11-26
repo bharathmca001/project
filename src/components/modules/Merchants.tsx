@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import Badge from '../common/Badge';
 import Modal from '../common/Modal';
 import AddMerchantForm from '../forms/AddMerchantForm';
-import DataTable, { Column } from '../common/DataTable';
+import DataTable, { Column, FilterOption } from '../common/DataTable';
 import { mockMerchants } from '../../data/mockData';
 import { Merchant } from '../../types';
 import { logger } from '../../services/logger';
@@ -25,10 +25,15 @@ export default function Merchants() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [filteredMerchants, setFilteredMerchants] = useState<Merchant[]>([]);
 
   useEffect(() => {
     fetchMerchants();
   }, []);
+
+  useEffect(() => {
+    setFilteredMerchants(merchants);
+  }, [merchants]);
 
   const fetchMerchants = async () => {
     try {
@@ -88,6 +93,60 @@ export default function Merchants() {
     logger.info('Merchants', 'Edit action triggered', { id: merchant.id });
     toast.error('Edit functionality coming soon');
   };
+
+  const handleFilterChange = (filters: Record<string, string>) => {
+    let filtered = [...merchants];
+
+    if (filters.status) {
+      filtered = filtered.filter(m => m.status === filters.status);
+    }
+
+    if (filters.kycStatus) {
+      filtered = filtered.filter(m => m.kycStatus === filters.kycStatus);
+    }
+
+    if (filters.category) {
+      filtered = filtered.filter(m => m.category === filters.category);
+    }
+
+    setFilteredMerchants(filtered);
+    logger.info('Merchants', 'Filters applied', { filters, resultCount: filtered.length });
+  };
+
+  const filterOptions: FilterOption[] = [
+    {
+      key: 'status',
+      label: 'Status',
+      options: [
+        { value: 'active', label: 'Active' },
+        { value: 'inactive', label: 'Inactive' },
+        { value: 'pending', label: 'Pending' },
+        { value: 'suspended', label: 'Suspended' },
+      ],
+    },
+    {
+      key: 'kycStatus',
+      label: 'KYC Status',
+      options: [
+        { value: 'approved', label: 'Approved' },
+        { value: 'pending', label: 'Pending' },
+        { value: 'rejected', label: 'Rejected' },
+      ],
+    },
+    {
+      key: 'category',
+      label: 'Category',
+      options: [
+        { value: 'Restaurant', label: 'Restaurant' },
+        { value: 'Cafe', label: 'Cafe' },
+        { value: 'Grocery', label: 'Grocery' },
+        { value: 'Pharmacy', label: 'Pharmacy' },
+        { value: 'Retail', label: 'Retail' },
+        { value: 'Bakery', label: 'Bakery' },
+        { value: 'Fast Food', label: 'Fast Food' },
+      ],
+    },
+  ];
 
   const columns: Column<Merchant>[] = [
     {
@@ -189,11 +248,13 @@ export default function Merchants() {
       </div>
 
       <DataTable
-        data={merchants}
+        data={filteredMerchants}
         columns={columns}
         title="All Merchants"
         searchKeys={['businessName', 'name', 'email', 'category', 'location']}
         loading={loading}
+        filters={filterOptions}
+        onFilterChange={handleFilterChange}
         onRowClick={(merchant) => {
           logger.info('Merchants', 'Row clicked', { id: merchant.id });
           setSelectedMerchant(merchant);

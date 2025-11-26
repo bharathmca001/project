@@ -10,6 +10,12 @@ export interface Column<T> {
   className?: string;
 }
 
+export interface FilterOption {
+  key: string;
+  label: string;
+  options: { value: string; label: string }[];
+}
+
 export interface DataTableProps<T> {
   data: T[];
   columns: Column<T>[];
@@ -18,6 +24,8 @@ export interface DataTableProps<T> {
   onRowClick?: (row: T) => void;
   actions?: (row: T) => React.ReactNode;
   loading?: boolean;
+  filters?: FilterOption[];
+  onFilterChange?: (filters: Record<string, string>) => void;
 }
 
 type SortOrder = 'asc' | 'desc' | null;
@@ -30,12 +38,16 @@ export default function DataTable<T extends { id: string }>({
   onRowClick,
   actions,
   loading = false,
+  filters = [],
+  onFilterChange,
 }: DataTableProps<T>) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortKey, setSortKey] = useState<keyof T | null>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [activeFilters, setActiveFilters] = useState<Record<string, string>>({});
+  const [showFilters, setShowFilters] = useState(false);
 
   const filteredData = useMemo(() => {
     let result = [...data];
@@ -102,6 +114,25 @@ export default function DataTable<T extends { id: string }>({
     setSearchTerm(value);
     setCurrentPage(1);
     logger.info('DataTable', `Search initiated`, { value });
+  };
+
+  const handleFilterChange = (key: string, value: string) => {
+    const newFilters = { ...activeFilters };
+    if (value === '') {
+      delete newFilters[key];
+    } else {
+      newFilters[key] = value;
+    }
+    setActiveFilters(newFilters);
+    setCurrentPage(1);
+    onFilterChange?.(newFilters);
+    logger.info('DataTable', 'Filters applied', newFilters);
+  };
+
+  const clearFilters = () => {
+    setActiveFilters({});
+    onFilterChange?.({});
+    logger.info('DataTable', 'Filters cleared');
   };
 
   const handleExport = () => {
@@ -182,7 +213,45 @@ export default function DataTable<T extends { id: string }>({
               />
             </div>
           </div>
-          <div className="text-sm text-slate-600">
+
+          {filters.length > 0 && (
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-2 px-4 py-2 border rounded-xl transition-colors font-medium ${
+                Object.keys(activeFilters).length > 0
+                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+              }`}
+            >
+              <Filter size={16} />
+              Filters
+              {Object.keys(activeFilters).length > 0 && (
+                <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
+                  {Object.keys(activeFilters).length}
+                </span>
+              )}
+            </button>
+          )}
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-slate-600 whitespace-nowrap">Rows per page:</span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-medium"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+
+          <div className="text-sm text-slate-600 whitespace-nowrap">
             {filteredData.length > 0 ? (
               <>
                 Showing <span className="font-semibold">{startIndex + 1}</span> to{' '}
@@ -196,6 +265,43 @@ export default function DataTable<T extends { id: string }>({
             )}
           </div>
         </div>
+
+        {showFilters && filters.length > 0 && (
+          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-slate-900">Filter Options</h3>
+              {Object.keys(activeFilters).length > 0 && (
+                <button
+                  onClick={clearFilters}
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Clear All
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filters.map((filter) => (
+                <div key={filter.key}>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    {filter.label}
+                  </label>
+                  <select
+                    value={activeFilters[filter.key] || ''}
+                    onChange={(e) => handleFilterChange(filter.key, e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  >
+                    <option value="">All</option>
+                    {filter.options.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {filteredData.length === 0 ? (
           <div className="text-center py-8">
