@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Eye, Edit, Trash2, Plus, Download, Filter, MoreVertical, Star } from 'lucide-react';
+import { Eye, Edit, Trash2, Plus, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Badge from '../common/Badge';
-import SearchInput from '../common/SearchInput';
-import Select from '../common/Select';
 import Modal from '../common/Modal';
 import AddMerchantForm from '../forms/AddMerchantForm';
+import DataTable, { Column } from '../common/DataTable';
 import { mockMerchants } from '../../data/mockData';
 import { Merchant } from '../../types';
+import { logger } from '../../services/logger';
 
 interface MerchantFormData {
   name: string;
@@ -21,9 +21,6 @@ interface MerchantFormData {
 export default function Merchants() {
   const [merchants, setMerchants] = useState<Merchant[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
   const [selectedMerchant, setSelectedMerchant] = useState<Merchant | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -36,10 +33,12 @@ export default function Merchants() {
   const fetchMerchants = async () => {
     try {
       setLoading(true);
+      logger.info('Merchants', 'Fetching merchants data');
       await new Promise(resolve => setTimeout(resolve, 500));
       setMerchants(mockMerchants);
+      logger.info('Merchants', `Successfully loaded ${mockMerchants.length} merchants`);
     } catch (error) {
-      console.error('Error fetching merchants:', error);
+      logger.error('Merchants', 'Failed to fetch merchants', error);
       toast.error('Failed to load merchants');
     } finally {
       setLoading(false);
@@ -49,6 +48,7 @@ export default function Merchants() {
   const handleAddMerchant = async (formData: MerchantFormData) => {
     try {
       setIsSubmitting(true);
+      logger.info('Merchants', 'Creating new merchant', formData);
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const newMerchant: Merchant = {
@@ -67,43 +67,110 @@ export default function Merchants() {
         joinDate: new Date().toISOString().split('T')[0]
       };
 
+      logger.info('Merchants', 'Merchant created successfully', { id: newMerchant.id });
       toast.success('Merchant added successfully!');
       setMerchants([newMerchant, ...merchants]);
       setIsAddModalOpen(false);
-    } catch (error: any) {
-      console.error('Error adding merchant:', error);
+    } catch (error) {
+      logger.error('Merchants', 'Failed to add merchant', error);
       toast.error('Failed to add merchant. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const filteredMerchants = merchants.filter(merchant => {
-    const matchesSearch = merchant.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          merchant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          merchant.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = !statusFilter || merchant.status === statusFilter;
-    const matchesCategory = !categoryFilter || merchant.category === categoryFilter;
-    return matchesSearch && matchesStatus && matchesCategory;
-  });
-
-  const categories = Array.from(new Set(merchants.map(m => m.category)));
-
-  const handleViewMerchant = (merchant: Merchant) => {
-    setSelectedMerchant(merchant);
-    setIsViewModalOpen(true);
+  const handleDeleteMerchant = (merchant: Merchant) => {
+    logger.warn('Merchants', 'Delete action triggered', { id: merchant.id });
+    toast.error('Delete functionality coming soon');
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading merchants...</p>
+  const handleEditMerchant = (merchant: Merchant) => {
+    logger.info('Merchants', 'Edit action triggered', { id: merchant.id });
+    toast.error('Edit functionality coming soon');
+  };
+
+  const columns: Column<Merchant>[] = [
+    {
+      key: 'id',
+      label: 'ID',
+      sortable: true,
+    },
+    {
+      key: 'businessName',
+      label: 'Business Name',
+      sortable: true,
+    },
+    {
+      key: 'name',
+      label: 'Owner',
+      sortable: true,
+    },
+    {
+      key: 'category',
+      label: 'Category',
+      sortable: true,
+    },
+    {
+      key: 'location',
+      label: 'Location',
+      sortable: true,
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      sortable: true,
+      render: (value) => (
+        <Badge
+          variant={
+            value === 'active'
+              ? 'success'
+              : value === 'pending'
+              ? 'warning'
+              : value === 'suspended'
+              ? 'error'
+              : 'neutral'
+          }
+        >
+          {value}
+        </Badge>
+      ),
+    },
+    {
+      key: 'kycStatus',
+      label: 'KYC',
+      sortable: true,
+      render: (value) => (
+        <Badge
+          variant={
+            value === 'approved'
+              ? 'success'
+              : value === 'rejected'
+              ? 'error'
+              : 'warning'
+          }
+        >
+          {value}
+        </Badge>
+      ),
+    },
+    {
+      key: 'revenue',
+      label: 'Revenue',
+      sortable: true,
+      render: (value) => `$${value.toLocaleString()}`,
+    },
+    {
+      key: 'rating',
+      label: 'Rating',
+      sortable: true,
+      render: (value) => (
+        <div className="flex items-center gap-1">
+          <Star size={14} className="text-amber-400 fill-amber-400" />
+          <span className="font-semibold">{value}</span>
         </div>
-      </div>
-    );
-  }
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -121,152 +188,46 @@ export default function Merchants() {
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="md:col-span-2">
-            <SearchInput
-              value={searchTerm}
-              onChange={setSearchTerm}
-              placeholder="Search by name, business, or email..."
-            />
-          </div>
-          <Select
-            value={statusFilter}
-            onChange={setStatusFilter}
-            options={[
-              { value: 'active', label: 'Active' },
-              { value: 'inactive', label: 'Inactive' },
-              { value: 'pending', label: 'Pending' },
-              { value: 'suspended', label: 'Suspended' }
-            ]}
-            placeholder="Filter by Status"
-          />
-          <Select
-            value={categoryFilter}
-            onChange={setCategoryFilter}
-            options={categories.map(cat => ({ value: cat, label: cat }))}
-            placeholder="Filter by Category"
-          />
-        </div>
-
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-sm text-slate-600">
-            Showing <span className="font-semibold text-slate-900">{filteredMerchants.length}</span> of{' '}
-            <span className="font-semibold text-slate-900">{merchants.length}</span> merchants
-          </p>
-          <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors text-sm font-medium">
-              <Filter size={16} />
-              More Filters
+      <DataTable
+        data={merchants}
+        columns={columns}
+        title="All Merchants"
+        searchKeys={['businessName', 'name', 'email', 'category', 'location']}
+        loading={loading}
+        onRowClick={(merchant) => {
+          logger.info('Merchants', 'Row clicked', { id: merchant.id });
+          setSelectedMerchant(merchant);
+          setIsViewModalOpen(true);
+        }}
+        actions={(merchant) => (
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => {
+                setSelectedMerchant(merchant);
+                setIsViewModalOpen(true);
+              }}
+              className="p-2 hover:bg-blue-50 rounded-xl transition-colors group"
+              title="View Details"
+            >
+              <Eye size={16} className="text-slate-600 group-hover:text-blue-600" />
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors text-sm font-medium">
-              <Download size={16} />
-              Export
+            <button
+              onClick={() => handleEditMerchant(merchant)}
+              className="p-2 hover:bg-green-50 rounded-xl transition-colors group"
+              title="Edit"
+            >
+              <Edit size={16} className="text-slate-600 group-hover:text-green-600" />
+            </button>
+            <button
+              onClick={() => handleDeleteMerchant(merchant)}
+              className="p-2 hover:bg-red-50 rounded-xl transition-colors group"
+              title="Delete"
+            >
+              <Trash2 size={16} className="text-slate-600 group-hover:text-red-600" />
             </button>
           </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200">
-                <th className="text-left py-4 px-4 text-sm font-semibold text-slate-600">ID</th>
-                <th className="text-left py-4 px-4 text-sm font-semibold text-slate-600">Business Name</th>
-                <th className="text-left py-4 px-4 text-sm font-semibold text-slate-600">Owner</th>
-                <th className="text-left py-4 px-4 text-sm font-semibold text-slate-600">Category</th>
-                <th className="text-left py-4 px-4 text-sm font-semibold text-slate-600">Location</th>
-                <th className="text-left py-4 px-4 text-sm font-semibold text-slate-600">Status</th>
-                <th className="text-left py-4 px-4 text-sm font-semibold text-slate-600">KYC</th>
-                <th className="text-right py-4 px-4 text-sm font-semibold text-slate-600">Revenue</th>
-                <th className="text-center py-4 px-4 text-sm font-semibold text-slate-600">Rating</th>
-                <th className="text-center py-4 px-4 text-sm font-semibold text-slate-600">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredMerchants.map((merchant) => (
-                <tr key={merchant.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                  <td className="py-4 px-4 text-sm font-medium text-slate-900">{merchant.id}</td>
-                  <td className="py-4 px-4">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-900">{merchant.businessName}</p>
-                      <p className="text-xs text-slate-500">{merchant.email}</p>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4 text-sm text-slate-700">{merchant.name}</td>
-                  <td className="py-4 px-4 text-sm text-slate-700">{merchant.category}</td>
-                  <td className="py-4 px-4 text-sm text-slate-700">{merchant.location}</td>
-                  <td className="py-4 px-4">
-                    <Badge
-                      variant={
-                        merchant.status === 'active'
-                          ? 'success'
-                          : merchant.status === 'pending'
-                          ? 'warning'
-                          : merchant.status === 'suspended'
-                          ? 'error'
-                          : 'neutral'
-                      }
-                    >
-                      {merchant.status}
-                    </Badge>
-                  </td>
-                  <td className="py-4 px-4">
-                    <Badge
-                      variant={
-                        merchant.kycStatus === 'approved'
-                          ? 'success'
-                          : merchant.kycStatus === 'rejected'
-                          ? 'error'
-                          : 'warning'
-                      }
-                    >
-                      {merchant.kycStatus}
-                    </Badge>
-                  </td>
-                  <td className="py-4 px-4 text-sm font-semibold text-slate-900 text-right">
-                    ${merchant.revenue.toLocaleString()}
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="flex items-center justify-center gap-1">
-                      <Star size={14} className="text-amber-400 fill-amber-400" />
-                      <span className="text-sm font-semibold text-slate-900">{merchant.rating}</span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => handleViewMerchant(merchant)}
-                        className="p-2 hover:bg-blue-50 rounded-xl transition-colors group"
-                        title="View Details"
-                      >
-                        <Eye size={16} className="text-slate-600 group-hover:text-blue-600" />
-                      </button>
-                      <button
-                        className="p-2 hover:bg-green-50 rounded-xl transition-colors group"
-                        title="Edit"
-                      >
-                        <Edit size={16} className="text-slate-600 group-hover:text-green-600" />
-                      </button>
-                      <button
-                        className="p-2 hover:bg-red-50 rounded-xl transition-colors group"
-                        title="Delete"
-                      >
-                        <Trash2 size={16} className="text-slate-600 group-hover:text-red-600" />
-                      </button>
-                      <button
-                        className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
-                        title="More Options"
-                      >
-                        <MoreVertical size={16} className="text-slate-600" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+        )}
+      />
 
       <Modal
         isOpen={isAddModalOpen}
