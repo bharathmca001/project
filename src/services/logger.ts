@@ -35,6 +35,10 @@ class Logger {
   }
 
   private format(level: LogLevel, category: string, message: string, data?: any): void {
+    if (!config.isDevelopment) {
+      return;
+    }
+
     const timestamp = this.formatTimestamp();
     const entry: LogEntry = { timestamp, level, category, message, data };
 
@@ -42,10 +46,6 @@ class Logger {
 
     if (this.logs.length > this.maxLogs) {
       this.logs.shift();
-    }
-
-    if (!config.isDevelopment) {
-      return;
     }
 
     const emoji = LogEmojis[level];

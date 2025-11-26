@@ -6,6 +6,7 @@ import Customers from '../components/modules/Customers';
 import Orders from '../components/modules/Orders';
 import Analytics from '../components/modules/Analytics';
 import Settings from '../components/modules/Settings';
+import ComponentsExample from '../components/modules/ComponentsExample';
 import UnderConstruction from '../components/modules/UnderConstruction';
 import { Award, FileCheck, Package, Truck, Megaphone, DollarSign, Bell, Shield } from 'lucide-react';
 
@@ -37,6 +38,10 @@ export const router = createBrowserRouter([
       {
         path: 'settings',
         element: <Settings />
+      },
+      {
+        path: 'components',
+        element: <ComponentsExample />
       },
       {
         path: 'loyalty',

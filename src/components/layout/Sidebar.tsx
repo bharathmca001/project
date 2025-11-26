@@ -14,6 +14,7 @@ import {
   Bell,
   Shield,
   Settings,
+  Layers,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
@@ -38,6 +39,7 @@ const menuItems = [
   { id: 'finance', label: 'Finance', icon: DollarSign },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'roles', label: 'Roles & Permissions', icon: Shield },
+  { id: 'components', label: 'Components', icon: Layers },
   { id: 'settings', label: 'Settings', icon: Settings }
 ];
 
