@@ -93,7 +93,7 @@ export default function Orders() {
       key: 'amount',
       label: 'Amount',
       sortable: true,
-      render: (value) => `$${value.toLocaleString()}`,
+      render: (value) => `$${value?.toLocaleString()}`,
     },
     {
       key: 'date',
@@ -250,7 +250,7 @@ export default function Orders() {
               <div className="col-span-2">
                 <p className="text-sm font-semibold text-slate-600 mb-1">Total Amount</p>
                 <p className="text-2xl font-bold text-slate-900">
-                  ${selectedOrder.amount.toLocaleString()}
+                  ${selectedOrder?.amount?.toLocaleString()}
                 </p>
               </div>
             </div>
